@@ -104,5 +104,26 @@ async function updateEnvQL(token, env) {
   }
 }
 
+//启用环境变量
+async function enableEnvVariable(token, id) {
+  const url = `${process.env.ADDRESS}/open/envs/enable?t=${id}`;
+  try {
+    const response = await axios.put(url, [1], {
+      headers: {
+        Authorization: token,
+        "Content-Type": "application/json",
+      },
+    });
+    if (response.data.code === 200) {
+      return true;
+    } else {
+      console.log(`变量启用失败：${response.data.message}`);
+      return false;
+    }
+  } catch (error) {
+    console.log(`变量启用失败：${error.message}`);
+    return false;
+  }
+}
 
-module.exports = { updateEnvQL, addEnvsQL, getEnvsQL, loginQL };
+module.exports = { updateEnvQL, addEnvsQL, getEnvsQL, loginQL, enableEnvVariable };

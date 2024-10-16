@@ -4,7 +4,7 @@ const moment = require("moment");
 const nodemailer = require("nodemailer");
 const cron = require("node-cron");
 const dom = require("./dom.config");
-const { loginQL, getEnvsQL, addEnvsQL, updateEnvQL } = require("./ql");
+const { loginQL, getEnvsQL, addEnvsQL, updateEnvQL, enableEnvVariable } = require("./ql");
 require("dotenv").config({
   path: "./.env",
 });
@@ -13,9 +13,9 @@ function sleep(ms) {
   return new Promise(resolve => setTimeout(resolve, ms));
 }
 
-if (!fs.existsSync(dirPath)) {
+if (!fs.existsSync("./.history")) {
   // 文件夹不存在，创建文件夹
-  fs.mkdirSync(dirPath, { recursive: true });
+  fs.mkdirSync("./.history", { recursive: true });
 }
 
 function random(min, max) {
@@ -24,8 +24,8 @@ function random(min, max) {
 async function start() {
   const browser = await puppeteer.launch({
     userDataDir: "./data",
-    // headless: true, // 无头模式
-    headless: false, // 无头模式
+    headless: true, // 无头模式
+    // headless: false, // 无头模式
     defaultViewport: {
       width: 1380, // 设置宽度
       height: 900, // 设置高度
@@ -35,6 +35,7 @@ async function start() {
       "--no-sandbox",
       "--disable-setuid-sandbox",
       "--disable-blink-features=AutomationControlled",
+      "--enable-gpu",
     ],
   });
   const page = await browser.newPage();
@@ -180,7 +181,7 @@ async function start() {
   const cookieString = cookies.map(cookie => `${cookie.name}=${cookie.value}`).join("; ");
 
   await sleep(3000);
-  await page.close();
+  await browser.close();
 
   const token = await loginQL(process.env.CLIENT_ID, process.env.CLIENT_SECRET);
 
@@ -196,6 +197,9 @@ async function start() {
       name: existingEnv.name,
       value: cookieString,
     });
+    if (result) {
+      enableEnvVariable(token, [existingEnv.id]);
+    }
     if (result) {
       fs.writeFileSync("./.history/" + moment().format("YYYY-MM-DD"), "");
     } else {
