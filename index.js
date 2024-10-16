@@ -4,6 +4,7 @@ const moment = require("moment");
 const nodemailer = require("nodemailer");
 const cron = require("node-cron");
 const dom = require("./dom.config");
+
 const { loginQL, getEnvsQL, addEnvsQL, updateEnvQL, enableEnvVariable } = require("./ql");
 require("dotenv").config({
   path: "./.env",
@@ -21,7 +22,13 @@ if (!fs.existsSync("./.history")) {
 function random(min, max) {
   return Math.floor(Math.random() * (max - min + 1)) + min;
 }
+
 async function start() {
+  let PROXY = [];
+  if (process.env.PROXY_ADDRESS) {
+    PROXY.push(`--proxy-server=${process.env.PROXY_ADDRESS}`);
+  }
+
   const browser = await puppeteer.launch({
     userDataDir: "./data",
     headless: true, // 无头模式
@@ -36,9 +43,17 @@ async function start() {
       "--disable-setuid-sandbox",
       "--disable-blink-features=AutomationControlled",
       "--enable-gpu",
-    ],
+    ].concat(PROXY),
   });
+
   const page = await browser.newPage();
+
+  if (process.env.PROXY_ADDRESS) {
+    await page.authenticate({
+      username: process.env.PROXY_USERNAME || "",
+      password: process.env.PROXY_PASSWORD || "",
+    });
+  }
 
   await page.evaluateOnNewDocument(() => {
     const newProto = navigator.__proto__;
@@ -143,6 +158,7 @@ async function start() {
 
   // 进入京东页面后删除Cookie并刷新页面
   await page.goto("https://m.jd.com");
+
   await page._client().send("Network.clearBrowserCookies");
   await page.reload();
 

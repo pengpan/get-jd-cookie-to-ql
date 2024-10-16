@@ -25,6 +25,11 @@ CLIENT_SECRET= #应用设置的 C 密钥
 EMAIL_USER= #接收报错信息的QQ邮箱 
 EMAIL_KEY= #SMTP密钥
 
+# 代理不要是云服务器的 最好是家宽的DDNS
+# 地址实例:82.11.11.11:8888  用户名密码可以空
+PROXY_ADDRESS=
+PROXY_USERNAME=
+PROXY_PASSWORD=
 ```
 
 # 命令
