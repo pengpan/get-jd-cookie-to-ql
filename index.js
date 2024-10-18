@@ -2,10 +2,11 @@ const puppeteer = require("puppeteer");
 const fs = require("fs");
 const moment = require("moment");
 const nodemailer = require("nodemailer");
-const cron = require("node-cron");
 const dom = require("./dom.config");
 
-const { loginQL, getEnvsQL, addEnvsQL, updateEnvQL, enableEnvVariable } = require("./ql");
+const { loginQL, getEnvsQL, addEnvsQL, updateEnvQL, enableEnvVariable } = require("./tools/ql");
+const changePage = require("./tools/page");
+
 require("dotenv").config({
   path: "./.env",
 });
@@ -24,6 +25,24 @@ function random(min, max) {
 }
 
 async function start() {
+  if (fs.existsSync("./.history/" + moment().format("YYYY-MM-DD"))) {
+    let time = moment()
+      .add(1, "days")
+      .hours(8)
+      .minutes(0)
+      .seconds(0)
+      .milliseconds(0)
+      .diff(moment());
+
+    console.log(
+      `${moment().format("YYYY-MM-DD HH:mm:ss")}已经执行,在 ${time} 毫秒后重新执行 (${moment(
+        new Date(+new Date() + time)
+      ).format("MM-DD HH:mm:ss")})`
+    );
+
+    await sleep(time + random(1_800_000, 3600_000));
+  }
+
   let PROXY = [];
   if (process.env.PROXY_ADDRESS) {
     PROXY.push(`--proxy-server=${process.env.PROXY_ADDRESS}`);
@@ -55,106 +74,7 @@ async function start() {
     });
   }
 
-  await page.evaluateOnNewDocument(() => {
-    const newProto = navigator.__proto__;
-    delete newProto.webdriver; //删除 navigator.webdriver字段
-    navigator.__proto__ = newProto;
-  });
-  await page.evaluateOnNewDocument(() => {
-    window.chrome = {};
-    window.chrome.app = {
-      InstallState: "hehe",
-      RunningState: "haha",
-      getDetails: "xixi",
-      getIsInstalled: "ohno",
-    };
-    window.chrome.csi = function () {};
-    window.chrome.loadTimes = function () {};
-    window.chrome.runtime = function () {};
-  });
-  await page.evaluateOnNewDocument(() => {
-    Object.defineProperty(navigator, "userAgent", {
-      //userAgent在无头模式下有headless字样，所以需覆盖
-      get: () =>
-        "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_3) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/81.0.4044.113 Safari/537.36",
-    });
-  });
-  await page.evaluateOnNewDocument(() => {
-    Object.defineProperty(navigator, "plugins", {
-      //伪装真实的插件信息
-      get: () => [
-        {
-          0: {
-            type: "application/x-google-chrome-pdf",
-            suffixes: "pdf",
-            description: "Portable Document Format",
-            enabledPlugin: Plugin,
-          },
-          description: "Portable Document Format",
-          filename: "internal-pdf-viewer",
-          length: 1,
-          name: "Chrome PDF Plugin",
-        },
-        {
-          0: {
-            type: "application/pdf",
-            suffixes: "pdf",
-            description: "",
-            enabledPlugin: Plugin,
-          },
-          description: "",
-          filename: "mhjfbmdgcfjbbpaeojofohoefgiehjai",
-          length: 1,
-          name: "Chrome PDF Viewer",
-        },
-        {
-          0: {
-            type: "application/x-nacl",
-            suffixes: "",
-            description: "Native Client Executable",
-            enabledPlugin: Plugin,
-          },
-          1: {
-            type: "application/x-pnacl",
-            suffixes: "",
-            description: "Portable Native Client Executable",
-            enabledPlugin: Plugin,
-          },
-          description: "",
-          filename: "internal-nacl-plugin",
-          length: 2,
-          name: "Native Client",
-        },
-      ],
-    });
-  });
-  await page.evaluateOnNewDocument(() => {
-    Object.defineProperty(navigator, "languages", {
-      //添加语言
-      get: () => ["zh-CN", "zh", "en"],
-    });
-  });
-  await page.evaluateOnNewDocument(() => {
-    const originalQuery = window.navigator.permissions.query; //notification伪装
-    window.navigator.permissions.query = parameters =>
-      parameters.name === "notifications"
-        ? Promise.resolve({ state: Notification.permission })
-        : originalQuery(parameters);
-  });
-  await page.evaluateOnNewDocument(() => {
-    const getParameter = WebGLRenderingContext.getParameter;
-    WebGLRenderingContext.prototype.getParameter = function (parameter) {
-      // UNMASKED_VENDOR_WEBGL
-      if (parameter === 37445) {
-        return "Intel Inc.";
-      }
-      // UNMASKED_RENDERER_WEBGL
-      if (parameter === 37446) {
-        return "Intel(R) Iris(TM) Graphics 6100";
-      }
-      return getParameter(parameter);
-    };
-  });
+  await changePage(page);
 
   // 进入京东页面后删除Cookie并刷新页面
   await page.goto("https://m.jd.com");
@@ -162,7 +82,6 @@ async function start() {
   await page._client().send("Network.clearBrowserCookies");
   await page.reload();
 
-  //   await removeLayer(page); // 你的其他操作
   await sleep(2000);
 
   //   登录按钮
@@ -253,21 +172,10 @@ async function start() {
     const result = await addEnvsQL(token, newEnv);
     console.log("新建 JD_COOKIE 结果:", result.data);
   }
-}
-if (!fs.existsSync("./.history/" + moment().format("YYYY-MM-DD"))) {
-  try {
-    start();
-  } catch (error) {
-    console.log("启动初次执行报错:");
-    console.log(error);
-  }
-}
 
-cron.schedule("0 0 */1 * *", () => {
-  try {
-    start();
-  } catch (error) {
-    console.log("执行定时任务时报错:");
-    console.log(error);
-  }
-});
+  console.log(`${moment().format("YYYY-MM-DD HH:mm:ss")}完成`);
+
+  await sleep(86_400_000 + random(1_800_000, 3600_000));
+  await start();
+}
+start();
