@@ -9,7 +9,7 @@
 
 **安装 puppeteer后如果出现报错可能是未找到浏览器内核 运行命令安装一下**
 
-`px puppeteer browsers install chrome`
+`npx puppeteer browsers install chrome`
 
 ## 环境变量!!!
 

@@ -50,8 +50,8 @@ async function start() {
 
   const browser = await puppeteer.launch({
     userDataDir: "./data",
-    headless: true, // 无头模式
-    // headless: false, // 无头模式
+    // headless: true, // 无头模式
+    headless: false, // 无头模式
     defaultViewport: {
       width: 1380, // 设置宽度
       height: 900, // 设置高度
@@ -96,7 +96,7 @@ async function start() {
   // 点击QQ登录
   await page.click(dom.JDLoginQQBtn);
 
-  await sleep(5000);
+  await sleep(10000);
 
   const iframeDom = await page.frames().filter(iframe => {
     return iframe._name === dom.QQLoginIframeName;
@@ -113,7 +113,10 @@ async function start() {
   await sleep(2000);
 
   const cookies = await page.cookies();
-  const cookieString = cookies.map(cookie => `${cookie.name}=${cookie.value}`).join("; ");
+  const cookieString = cookies
+    .filter(item => ["pt_key", "pt_pin"].includes(item.name))
+    .map(cookie => `${cookie.name}=${cookie.value}`)
+    .join("; ");
 
   await sleep(3000);
   await browser.close();
