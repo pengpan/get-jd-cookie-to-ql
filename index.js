@@ -50,8 +50,8 @@ async function start() {
 
   const browser = await puppeteer.launch({
     userDataDir: "./data",
-    // headless: true, // 无头模式
-    headless: false, // 无头模式
+    headless: true, // 无头模式
+    // headless: false, // 无头模式
     defaultViewport: {
       width: 1380, // 设置宽度
       height: 900, // 设置高度
@@ -113,10 +113,9 @@ async function start() {
   await sleep(2000);
 
   const cookies = await page.cookies();
-  const cookieString = cookies
-    .filter(item => ["pt_key", "pt_pin"].includes(item.name))
-    .map(cookie => `${cookie.name}=${cookie.value}`)
-    .join("; ");
+  const ptKey = cookies.find(item => item.name === "pt_key")?.value;
+  const ptPin = cookies.find(item => item.name === "pt_pin")?.value;
+  const cookieString = `pt_key=${ptKey};pt_pin=${ptPin};`;
 
   await sleep(3000);
   await browser.close();
