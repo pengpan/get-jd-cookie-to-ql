@@ -123,7 +123,7 @@ async function start() {
   const token = await loginQL(process.env.CLIENT_ID, process.env.CLIENT_SECRET);
 
   // 获取环境变量
-  const envs = await getEnvsQL(token);
+  const envs = await getEnvsQL(token, ptPin);
   const existingEnv = envs.find(env => env.name === "JD_COOKIE");
 
   if (existingEnv) {
@@ -170,9 +170,9 @@ async function start() {
     }
   } else {
     // 如果不存在，创建新的 JD_COOKIE
-    const newEnv = [{ name: "JD_COOKIE", value: cookieString }];
+    const newEnv = [{ name: "JD_COOKIE", value: cookieString, remarks: ptPin }];
     const result = await addEnvsQL(token, newEnv);
-    console.log("新建 JD_COOKIE 结果:", result.data);
+    console.log("新建 JD_COOKIE 结果:", result);
   }
 
   console.log(`${moment().format("YYYY-MM-DD HH:mm:ss")}完成`);

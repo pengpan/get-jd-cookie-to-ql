@@ -18,9 +18,9 @@ async function loginQL(clientId, clientSecret) {
 }
 
 // 获取环境变量
-async function getEnvsQL(token) {
+async function getEnvsQL(token, remarks) {
   try {
-    const url = `${process.env.ADDRESS}/open/envs?searchValue=`;
+    const url = `${process.env.ADDRESS}/open/envs?searchValue=${remarks}`;
     const response = await axios.get(url, {
       headers: { Authorization: token },
     });
