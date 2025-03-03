@@ -40,6 +40,27 @@ nodejs 18及以上
 1. npm i
 2. node index 或者npm run start
 
+# Docker
+
+## 构建
+```shell
+docker build -t get-jd-cookie-to-ql:latest .
+```
+or
+```shell
+docker pull ghcr.io/pengpan/get-jd-cookie-to-ql:latest
+```
+
+## 运行
+```shell
+docker run \
+--name get-jd-cookie-to-ql \
+-v $PWD/.env:/app/.env \
+-e TZ=Asia/Shanghai \
+--restart=always
+-d get-jd-cookie-to-ql:latest
+```
+
 # 云服务器
 
 建议参考:[https://github.com/puppeteer/puppeteer/blob/main/docs/troubleshooting.md#running-puppeteer-in-docker](https://github.com/puppeteer/puppeteer/blob/main/docs/troubleshooting.md#running-puppeteer-in-docker)
