@@ -42,11 +42,7 @@ nodejs 18及以上
 
 # Docker
 
-## 构建
-```shell
-docker build -t get-jd-cookie-to-ql:latest .
-```
-or
+## 拉取
 ```shell
 docker pull ghcr.io/pengpan/get-jd-cookie-to-ql:latest
 ```
@@ -58,7 +54,7 @@ docker run \
 -v $PWD/.env:/app/.env \
 -e TZ=Asia/Shanghai \
 --restart=always
--d get-jd-cookie-to-ql:latest
+-d ghcr.io/pengpan/get-jd-cookie-to-ql:latest
 ```
 
 # 云服务器
