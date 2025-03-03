@@ -12,4 +12,6 @@ USER pptruser
 
 COPY . .
 
+RUN npx puppeteer browsers install
+
 CMD ["node", "index.js"]
