@@ -53,7 +53,7 @@ docker run \
 --name get-jd-cookie-to-ql \
 -v $PWD/.env:/app/.env \
 -e TZ=Asia/Shanghai \
---restart=always
+--restart=always \
 -d ghcr.io/pengpan/get-jd-cookie-to-ql:latest
 ```
 
