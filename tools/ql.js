@@ -106,9 +106,9 @@ async function updateEnvQL(token, env) {
 
 //启用环境变量
 async function enableEnvVariable(token, id) {
-  const url = `${process.env.ADDRESS}/open/envs/enable?t=${id}`;
+  const url = `${process.env.ADDRESS}/open/envs/enable`;
   try {
-    const response = await axios.put(url, [1], {
+    const response = await axios.put(url, [id], {
       headers: {
         Authorization: token,
         "Content-Type": "application/json",
